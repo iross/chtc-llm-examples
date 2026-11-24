@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.9.10"
+
+jobs:
+  checks:
+    name: checks (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [pdf_ocr, rockd_live]
+    defaults:
+      run:
+        working-directory: ${{ matrix.project }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          version: ${{ env.UV_VERSION }}
+          working-directory: ${{ matrix.project }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run ty check
+      - run: uv run pytest -q
+
+  quickstart:
+    name: checks (quickstart)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: quickstart
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          version: ${{ env.UV_VERSION }}
+          working-directory: quickstart
+      - run: uv sync --script hello.py
+      - run: uvx ruff@0.17.5 check hello.py
+      - run: uvx ruff@0.17.5 format --check hello.py
+      - run: uvx ty@0.0.106 check --python "$(uv python find --script hello.py)" hello.py
+
+  # Calls the real service with the CHTC_LLM_API_KEY secret from the "live" environment.
+  # Pull requests from forks can't read secrets, so the job is skipped for them.
+  live:
+    name: live tests
+    needs: [checks, quickstart]
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment: live
+    permissions:
+      contents: read
+    concurrency:
+      group: live-tests
+      cancel-in-progress: false
+    env:
+      CHTC_LLM_API_KEY: ${{ secrets.CHTC_LLM_API_KEY }}
+    steps:
+      - name: Check that the API key secret is set
+        run: |
+          if [ -z "$CHTC_LLM_API_KEY" ]; then
+            echo "::error::Add a CHTC_LLM_API_KEY secret to the 'live' environment (Settings > Environments)."
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          version: ${{ env.UV_VERSION }}
+          ignore-nothing-to-cache: true
+      - name: quickstart
+        working-directory: quickstart
+        run: uv run hello.py
+      - name: pdf_ocr
+        working-directory: pdf_ocr
+        run: uv run --locked pytest -q -m live
+      - name: rockd_live
+        working-directory: rockd_live
+        run: uv run --locked pytest -q -m live

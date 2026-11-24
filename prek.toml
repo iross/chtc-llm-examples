@@ -1,0 +1,37 @@
+# Git hooks, run by prek (https://prek.j178.dev). Set up once per clone with `prek install`;
+# run by hand with `prek run --all-files`. CI runs the same ruff and ty checks.
+#:schema https://www.schemastore.org/prek.json
+
+[[repos]]
+repo = "builtin"
+hooks = [
+    { id = "trailing-whitespace", args = ["--markdown-linebreak-ext=md"] },
+    { id = "end-of-file-fixer" },
+    { id = "check-added-large-files", args = ["--maxkb=1500"] },
+    { id = "check-merge-conflict" },
+    { id = "check-toml" },
+    { id = "check-yaml" },
+    { id = "detect-private-key" },
+]
+
+[[repos]]
+repo = "https://github.com/astral-sh/ruff-pre-commit"
+rev = "v0.17.5"
+hooks = [
+    { id = "ruff-check", args = ["--fix"] },
+    { id = "ruff-format", types_or = ["python", "pyi"] },
+]
+
+[[repos]]
+repo = "https://github.com/zizmorcore/zizmor-pre-commit"
+rev = "v1.32.0"
+hooks = [{ id = "zizmor" }]
+
+[[repos]]
+repo = "local"
+hooks = [
+    { id = "ty-pdf-ocr", name = "ty (pdf_ocr)", language = "system", entry = "uv run --directory pdf_ocr ty check", files = "^pdf_ocr/.*\\.py$", pass_filenames = false },
+    { id = "ty-rockd-live", name = "ty (rockd_live)", language = "system", entry = "uv run --directory rockd_live ty check", files = "^rockd_live/.*\\.py$", pass_filenames = false },
+    { id = "uv-lock-pdf-ocr", name = "uv.lock up to date (pdf_ocr)", language = "system", entry = "uv lock --check --directory pdf_ocr", files = "^pdf_ocr/(pyproject\\.toml|uv\\.lock)$", pass_filenames = false },
+    { id = "uv-lock-rockd-live", name = "uv.lock up to date (rockd_live)", language = "system", entry = "uv lock --check --directory rockd_live", files = "^rockd_live/(pyproject\\.toml|uv\\.lock)$", pass_filenames = false },
+]
