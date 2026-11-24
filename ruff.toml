@@ -1,0 +1,6 @@
+# Applies to files outside the example projects (quickstart/). pdf_ocr and rockd_live use the
+# [tool.ruff] settings in their own pyproject.toml.
+line-length = 100
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "TID252"]

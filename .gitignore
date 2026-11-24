@@ -1,0 +1,13 @@
+.DS_Store
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.env
+
+# Output from trying the examples locally
+pdf_ocr/ocr*/
+pdf_ocr/scans/
+rockd_live/my-results/
+rockd_live/results/*
+!rockd_live/results/.gitkeep
