@@ -18,8 +18,7 @@ NetID). There's no separate password to create.
 Once you're in, you can chat with the models in your browser. That's a good way to try a
 prompt before you write code for it.
 
-> If you sign in but can't see any models, your account may still need to be activated. Email
-> CHTC at <chtc@cs.wisc.edu>.
+> If you sign in but can't see any models, your account may still need to be activated. Please be patient or ping Ian if it's been more than a day or two.
 
 ## 2. Create an API key
 
