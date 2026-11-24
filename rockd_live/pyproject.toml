@@ -1,0 +1,34 @@
+[project]
+name = "rockd-live"
+version = "0.1.0"
+description = "Classify incoming Rockd images with the model hosted at llm.chtc.wisc.edu"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "openai==3.55.1",
+]
+
+[project.scripts]
+rockd-live = "rockd_live:main"
+
+[build-system]
+requires = ["uv_build>=0.9.10,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest==9.2.0",
+    "ruff==0.17.5",
+    "ty==0.0.106",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "TID252"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not live'"
+markers = ["live: calls the real CHTC LLM service; needs CHTC_LLM_API_KEY (run with -m live)"]
