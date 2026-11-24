@@ -1,3 +1,5 @@
+nb: READMEs and documentation are Claude-written as of 2026-11-24.
+
 # CHTC LLM examples
 
 CHTC runs large language models (LLMs) at <https://llm.chtc.wisc.edu>. You can chat with them
